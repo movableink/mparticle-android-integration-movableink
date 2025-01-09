@@ -31,6 +31,9 @@ doc/
 .idea/
 *.iml
 *.iws
+misc.xml
+deploymentTargetDropDown.xml
+render.experimental.xml
 
 # Gradle
 build
