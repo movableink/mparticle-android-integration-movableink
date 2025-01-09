@@ -23,14 +23,19 @@ import com.mparticle.kits.ReportingMessage
 import org.json.JSONObject
 import java.math.BigDecimal
 
-const val  TAG = "KitIntegration"
+const val TAG = "KitIntegration"
 private const val MOVABLE_APP_KEY = "movableAppKey"
-class MovableKit: KitIntegration(), AttributionListener, KitIntegration.CommerceListener, ApplicationStateListener{
 
+class MovableKit :
+    KitIntegration(),
+    AttributionListener,
+    KitIntegration.CommerceListener,
+    ApplicationStateListener {
     override fun getName(): String = NAME
+
     override fun onKitCreate(
         settings: Map<String?, String?>?,
-        context: Context?
+        context: Context?,
     ): List<ReportingMessage?>? {
         getSettings()[MOVABLE_APP_KEY]
             ?.let { MIClient.start() }
@@ -39,126 +44,120 @@ class MovableKit: KitIntegration(), AttributionListener, KitIntegration.Commerce
         return listOf()
     }
 
-    override fun setOptOut(optedOut: Boolean): List<ReportingMessage?>? {
-        return listOf(
+    override fun setOptOut(optedOut: Boolean): List<ReportingMessage?>? =
+        listOf(
             ReportingMessage(
                 this,
                 ReportingMessage.MessageType.OPT_OUT,
                 System.currentTimeMillis(),
-                null
-            )
+                null,
+            ),
+        )
+
+    override fun logEvent(event: MPEvent): List<ReportingMessage> {
+        when (event.eventName) {
+            PRODUCT_SEARCHED -> {
+                val properties =
+                    ProductSearched(
+                        query = event.customAttributeStrings?.get("query").toString(),
+                        url = event.customAttributeStrings?.get("url"),
+                    )
+                MIClient.productSearched(properties)
+            }
+            CATEGORY_VIEWED -> {
+                val category =
+                    Category(
+                        id = event.category.toString(),
+                        url = event.customAttributeStrings?.get("url"),
+                        title = event.category,
+                    )
+                MIClient.categoryViewed(category)
+            }
+
+            else -> {}
+        }
+
+        return listOf(
+            ReportingMessage(
+                this,
+                ReportingMessage.MessageType.EVENT,
+                System.currentTimeMillis(),
+                event.customAttributeStrings,
+            ),
         )
     }
 
-  override fun logEvent(event: MPEvent): List<ReportingMessage> {
-       when (event.eventName) {
-           PRODUCT_SEARCHED -> {
-              val properties = ProductSearched(
-                  query = event.customAttributeStrings?.get("query").toString(),
-                  url = event.customAttributeStrings?.get("url")
-              )
-              MIClient.productSearched(properties)
-          }
-           CATEGORY_VIEWED -> {
-              val category = Category(
-                  id = event.category.toString(),
-                  url = event.customAttributeStrings?.get("url"),
-                  title = event.category,
-
-              )
-               MIClient.categoryViewed(category)
-
-          }
-
-          else -> {}
-      }
-
-      return listOf(
-          ReportingMessage(
-              this,
-              ReportingMessage.MessageType.EVENT,
-              System.currentTimeMillis(),
-              event.customAttributeStrings
-          )
-      )
-  }
-
-
     override fun logEvent(commerceEvent: CommerceEvent): List<ReportingMessage> {
-        when(commerceEvent.eventName){
+        when (commerceEvent.eventName) {
             PRODUCT_ADDED -> {
-                commerceEvent.products?.forEach {product-> MIClient.productAdded(createProductProperties(product)) }
-
+                commerceEvent.products?.forEach { product -> MIClient.productAdded(createProductProperties(product)) }
             }
-            PRODUCT_REMOVED ->{
-
-
-                    commerceEvent.products?.forEach {product->
-                        MIClient.productRemoved(createProductProperties(product)) }
-
+            PRODUCT_REMOVED -> {
+                commerceEvent.products?.forEach { product ->
+                    MIClient.productRemoved(createProductProperties(product))
+                }
             }
 
-            PRODUCT_VIEWED->{
-                commerceEvent.products?.forEach {product-> MIClient.productViewed(createProductProperties(product)) }
+            PRODUCT_VIEWED -> {
+                commerceEvent.products?.forEach { product -> MIClient.productViewed(createProductProperties(product)) }
             }
-            ORDER_COMPLETED->{
-                commerceEvent.products?.forEach {product->
-                    val properties =  OrderCompletedProperties(
-                        id = product.sku,
-                        revenue = product.totalAmount.toString(),
-                        orderProducts =listOf(
-                            OrderProduct(
-                                id = product.sku,
-                                title = product.name,
-                                price = product.unitPrice.toString(),
-                                quantity = product.quantity.toInt()
-                            )
+            ORDER_COMPLETED -> {
+                commerceEvent.products?.forEach { product ->
+                    val properties =
+                        OrderCompletedProperties(
+                            id = product.sku,
+                            revenue = product.totalAmount.toString(),
+                            orderProducts =
+                                listOf(
+                                    OrderProduct(
+                                        id = product.sku,
+                                        title = product.name,
+                                        price = product.unitPrice.toString(),
+                                        quantity = product.quantity.toInt(),
+                                    ),
+                                ),
                         )
-                    )
                     MIClient.orderCompleted(properties)
                 }
             }
         }
-                return listOf(ReportingMessage.fromEvent(this, commerceEvent))
+        return listOf(ReportingMessage.fromEvent(this, commerceEvent))
     }
 
-
-
     override fun onResult(result: AttributionResult) {
-
            /* val clickthroughUrl = result.link
             if (!clickthroughUrl.isNullOrEmpty()) {
               result
             }*/
+    }
 
-    }
-    override fun onError(p0: AttributionError) {
-    }
+    override fun onError(p0: AttributionError) {}
+
     override fun logLtvIncrease(
         bigDecimal: BigDecimal,
         bigDecimal1: BigDecimal,
         s: String,
-        map: Map<String, String>
+        map: Map<String, String>,
     ): List<ReportingMessage> = emptyList()
 
     override fun onApplicationForeground() {
         val currentActivity = kitManager.currentActivity?.get()
         currentActivity?.intent?.data?.let { uri ->
             MIClient.resolveUrlAsync(uri.toString()) { resolvedLink ->
-            resolvedLink?.let {
-                val attributionResult = AttributionResult().apply {
-                    parameters = JSONObject().apply {
-                        put("clickthrough_url", it)
-                    }
-                    serviceProviderId = configuration.kitId
+                resolvedLink?.let {
+                    val attributionResult =
+                        AttributionResult().apply {
+                            parameters =
+                                JSONObject().apply {
+                                    put("clickthrough_url", it)
+                                }
+                            serviceProviderId = configuration.kitId
+                        }
+                    kitManager.onResult(attributionResult)
                 }
-                kitManager.onResult(attributionResult)
             }
         }
-
-        }
     }
-
 
     override fun setInstallReferrer(intent: Intent?) {
         // Called when a deep link is received via an Intent
@@ -168,17 +167,18 @@ class MovableKit: KitIntegration(), AttributionListener, KitIntegration.Commerce
 
         }*/
     }
-    override fun onApplicationBackground() {
 
-    }
+    override fun onApplicationBackground() {}
 
     private fun onDeepLinkError(error: Exception) {
-        val attributionError = AttributionError().apply {
-            message = error.message
-            serviceProviderId = configuration.kitId
-        }
+        val attributionError =
+            AttributionError().apply {
+                message = error.message
+                serviceProviderId = configuration.kitId
+            }
         kitManager.onError(attributionError)
     }
+
     companion object {
         const val NAME = "Movable Ink Kit"
     }

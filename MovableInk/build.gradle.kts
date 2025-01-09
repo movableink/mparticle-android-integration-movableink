@@ -19,7 +19,7 @@ android {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
@@ -30,7 +30,7 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
-    lint{
+    lint {
         disable += "MParticleVersionInconsistency"
     }
 }
@@ -40,7 +40,7 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
-    implementation(libs.mparticle.core) //5.47.2
+    implementation(libs.mparticle.core) // 5.47.2
     implementation(libs.mparticle.kit.base)
     implementation(libs.inked)
 
