@@ -24,7 +24,6 @@ import org.json.JSONObject
 import java.math.BigDecimal
 
 const val TAG = "KitIntegration"
-private const val MOVABLE_APP_KEY = "movableAppKey"
 
 class MovableKit :
     KitIntegration(),
@@ -36,11 +35,19 @@ class MovableKit :
     override fun onKitCreate(
         settings: Map<String?, String?>?,
         context: Context?,
-    ): List<ReportingMessage?>? {
+    ): List<ReportingMessage?> {
         getSettings()[MOVABLE_APP_KEY]
-            ?.let { MIClient.start() }
+            ?.let {
+                MIClient.start()
+                settings?.get(MI_VALID_DOMAINS)?.let { valuesString ->
+                    val domainList = valuesString.split(",").map { it.trim() }
+                    MIClient.registerDeeplinkDomains(domainList)
+                }
+                settings?.get(MIU)?.let { userId ->
+                    MIClient.setMIU(userId)
+                }
+            }
 
-        // Initialize deep link handling
         return listOf()
     }
 
@@ -181,5 +188,8 @@ class MovableKit :
 
     companion object {
         const val NAME = "Movable Ink Kit"
+        const val MI_VALID_DOMAINS = "validDomains"
+        const val MIU = "user_id"
+        private const val MOVABLE_APP_KEY = "movableAppKey"
     }
 }
