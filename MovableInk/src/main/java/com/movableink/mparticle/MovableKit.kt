@@ -1,6 +1,7 @@
 package com.movableink.mparticle
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import com.movableink.inked.MIClient
 import com.movableink.inked.analytics.order.OrderCompletedProperties
 import com.movableink.inked.analytics.order.OrderProduct
@@ -17,25 +18,29 @@ import com.mparticle.AttributionListener
 import com.mparticle.AttributionResult
 import com.mparticle.MPEvent
 import com.mparticle.commerce.CommerceEvent
+import com.mparticle.internal.CoreCallbacks
 import com.mparticle.kits.KitIntegration
 import com.mparticle.kits.KitIntegration.ApplicationStateListener
+import com.mparticle.kits.MPSideloadedKit
 import com.mparticle.kits.ReportingMessage
 import org.json.JSONObject
 import java.math.BigDecimal
 
 const val TAG = "KitIntegration"
 
-class MovableKit :
-    KitIntegration(),
+class MovableKit(
+    kitId: Int,
+) : MPSideloadedKit(kitId = kitId),
+    CoreCallbacks.KitListener,
     AttributionListener,
     KitIntegration.CommerceListener,
     ApplicationStateListener {
     override fun getName(): String = NAME
 
     override fun onKitCreate(
-        settings: Map<String?, String?>?,
+        settings: MutableMap<String, String>?,
         context: Context?,
-    ): List<ReportingMessage?> {
+    ): MutableList<ReportingMessage> {
         getSettings()[MOVABLE_APP_KEY]
             ?.let {
                 MIClient.start()
@@ -48,11 +53,11 @@ class MovableKit :
                 }
             }
 
-        return listOf()
+        return mutableListOf()
     }
 
-    override fun setOptOut(optedOut: Boolean): List<ReportingMessage?>? =
-        listOf(
+    override fun setOptOut(optedOut: Boolean): MutableList<ReportingMessage> =
+        mutableListOf(
             ReportingMessage(
                 this,
                 ReportingMessage.MessageType.OPT_OUT,
@@ -191,5 +196,45 @@ class MovableKit :
         const val MI_VALID_DOMAINS = "validDomains"
         const val MIU = "user_id"
         private const val MOVABLE_APP_KEY = "movableAppKey"
+        private const val MOVABLE_KIT = "MovableInkKit"
+    }
+
+    override fun kitFound(kitId: Int) {
+        Log.d(MOVABLE_KIT, "$MOVABLE_KIT kitFound for kit: $kitId")
+    }
+
+    override fun kitConfigReceived(
+        kitId: Int,
+        p1: String?,
+    ) {
+        Log.d(MOVABLE_KIT, "$MOVABLE_KIT kitConfigReceived for kit: $kitId")
+    }
+
+    override fun kitExcluded(
+        kitId: Int,
+        p1: String?,
+    ) {
+        Log.d(MOVABLE_KIT, "$MOVABLE_KIT kitExcluded for kit $kitId")
+    }
+
+    override fun kitStarted(kitId: Int) {
+        Log.d(MOVABLE_KIT, "$MOVABLE_KIT kitStarted for kit: $kitId")
+    }
+
+    override fun onKitApiCalled(
+        kitId: Int,
+        p1: Boolean?,
+        vararg p2: Any?,
+    ) {
+        Log.d(MOVABLE_KIT, "$MOVABLE_KIT onKitApiCalled for kit: $kitId")
+    }
+
+    override fun onKitApiCalled(
+        methodName: String?,
+        kitId: Int,
+        p2: Boolean?,
+        vararg p3: Any?,
+    ) {
+        Log.d(MOVABLE_KIT, "$MOVABLE_KIT onKitApiCalled for kit: $kitId with method name: ${methodName.orEmpty()}")
     }
 }

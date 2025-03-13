@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.movableink.mparticle"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         minSdk = 24
