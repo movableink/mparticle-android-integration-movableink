@@ -28,9 +28,8 @@ import java.math.BigDecimal
 
 const val TAG = "KitIntegration"
 
-class MovableKit(
-    kitId: Int,
-) : MPSideloadedKit(kitId = kitId),
+open class MovableKit :
+    MPSideloadedKit(kitId = MIN_SIDE_LOADED_KIT),
     CoreCallbacks.KitListener,
     AttributionListener,
     KitIntegration.CommerceListener,
@@ -41,18 +40,14 @@ class MovableKit(
         settings: MutableMap<String, String>?,
         context: Context?,
     ): MutableList<ReportingMessage> {
-        getSettings()[MOVABLE_APP_KEY]
-            ?.let {
-                MIClient.start()
-                settings?.get(MI_VALID_DOMAINS)?.let { valuesString ->
-                    val domainList = valuesString.split(",").map { it.trim() }
-                    MIClient.registerDeeplinkDomains(domainList)
-                }
-                settings?.get(MIU)?.let { userId ->
-                    MIClient.setMIU(userId)
-                }
-            }
-
+        MIClient.start()
+        settings?.get(MI_VALID_DOMAINS)?.let { valuesString ->
+            val domainList = valuesString.split(",").map { it.trim() }
+            MIClient.registerDeeplinkDomains(domainList)
+        }
+        settings?.get(MIU)?.let { userId ->
+            MIClient.setMIU(userId)
+        }
         return mutableListOf()
     }
 
@@ -86,7 +81,8 @@ class MovableKit(
                 MIClient.categoryViewed(category)
             }
 
-            else -> {}
+            else -> {
+            }
         }
 
         return listOf(
@@ -100,7 +96,7 @@ class MovableKit(
     }
 
     override fun logEvent(commerceEvent: CommerceEvent): List<ReportingMessage> {
-        when (commerceEvent.eventName) {
+        when (commerceEvent.productAction) {
             PRODUCT_ADDED -> {
                 commerceEvent.products?.forEach { product -> MIClient.productAdded(createProductProperties(product)) }
             }
@@ -118,7 +114,7 @@ class MovableKit(
                     val properties =
                         OrderCompletedProperties(
                             id = product.sku,
-                            revenue = product.totalAmount.toString(),
+                            revenue = commerceEvent.transactionAttributes?.revenue.toString(),
                             orderProducts =
                                 listOf(
                                     OrderProduct(
@@ -137,10 +133,10 @@ class MovableKit(
     }
 
     override fun onResult(result: AttributionResult) {
-           /* val clickthroughUrl = result.link
-            if (!clickthroughUrl.isNullOrEmpty()) {
-              result
-            }*/
+        val clickthroughUrl = result.link
+        if (!clickthroughUrl.isNullOrEmpty()) {
+            result
+        }
     }
 
     override fun onError(p0: AttributionError) {}
@@ -161,7 +157,7 @@ class MovableKit(
                         AttributionResult().apply {
                             parameters =
                                 JSONObject().apply {
-                                    put("clickthrough_url", it)
+                                    put(CLICK_THROUGH_URL, it)
                                 }
                             serviceProviderId = configuration.kitId
                         }
@@ -174,10 +170,6 @@ class MovableKit(
     override fun setInstallReferrer(intent: Intent?) {
         // Called when a deep link is received via an Intent
         super.setInstallReferrer(intent)
-       /* intent?.data?.let
-       { uri ->
-
-        }*/
     }
 
     override fun onApplicationBackground() {}
@@ -197,6 +189,8 @@ class MovableKit(
         const val MIU = "user_id"
         private const val MOVABLE_APP_KEY = "movableAppKey"
         private const val MOVABLE_KIT = "MovableInkKit"
+        const val MIN_SIDE_LOADED_KIT = 1040009
+        const val CLICK_THROUGH_URL = "clickthrough_url"
     }
 
     override fun kitFound(kitId: Int) {

@@ -13,6 +13,7 @@ constraintlayout = "2.2.0"
 mparticle = "5.58.3"
 mockito = "4.11.0"
 mockito-kotlin = "4.1.0"
+androidCore = "5.58.12"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -24,10 +25,15 @@ androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
-mparticle-core = { group = "com.mparticle", name = "android-core", version.ref = "mparticle" }
-mparticle-kit-base = { group = "com.mparticle", name = "android-kit-base", version.ref = "mparticle" }
+#mparticle-core = { group = "com.mparticle", name = "android-core", version.ref = "mparticle" }
+#mparticle-kit-base = { group = "com.mparticle", name = "android-kit-base", version.ref = "mparticle" }
+
+mparticle-core = { module = "com.mparticle:android-core", version.ref = "mparticle" }
+mparticle-kit-base = { module = "com.mparticle:android-kit-base", version.ref = "mparticle" }
+
 mockito-core = { group = "org.mockito", name = "mockito-core", version.ref = "mockito" }
 mockito-kotlin = { group = "org.mockito.kotlin", name = "mockito-kotlin", version.ref = "mockito-kotlin" }
+android-core = { group = "com.mparticle", name = "android-core", version.ref = "androidCore" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

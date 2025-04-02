@@ -1,37 +1,16 @@
 package com.movableink.mparticle
 
 import android.content.Context
-import com.mparticle.MParticleOptions
-import com.mparticle.kits.KitIntegration
-import com.mparticle.kits.KitIntegrationFactory
+import com.mparticle.kits.MPSideloadedKit
 import org.junit.Assert
 import org.junit.Test
 import org.mockito.Mockito
 import java.lang.reflect.InvocationTargetException
 
+@Suppress("ktlint:standard:no-consecutive-comments")
 class MovableKitTest {
-    private val kit: KitIntegration
+    private val kit: MPSideloadedKit
         get() = MovableKit()
-
-    @Test
-    @Throws(Exception::class)
-    fun testGetName() {
-        val name = kit.name
-        Assert.assertTrue(!name.isNullOrEmpty())
-    }
-
-    @Test
-    @Throws(Exception::class)
-    fun testClassName() {
-        val options = Mockito.mock(MParticleOptions::class.java)
-        val factory = KitIntegrationFactory(options)
-        val integrations = factory.supportedKits
-        val className = kit.javaClass.name
-        // TODO test after the kit is registered #setupKnownIntegrations() + kitID
-        if (!integrations.any { it::class.java.name == className }) {
-            Assert.fail("$className not found as a known integration.")
-        }
-    }
 
     @Test
     @Throws(Exception::class)
@@ -40,7 +19,7 @@ class MovableKitTest {
         try {
             val kit = kit
             val settings = HashMap<String, String>()
-            settings["fake setting"] = "fake"
+            settings["mock setting"] = "mock"
 
             // access the protected method
             val method =

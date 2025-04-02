@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.movableink.mparticle"
-    compileSdk = 35
+    compileSdk = 34
 
     defaultConfig {
         minSdk = 24
@@ -27,6 +27,10 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+   /* compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }*/
     kotlinOptions {
         jvmTarget = "11"
     }
@@ -43,6 +47,7 @@ dependencies {
     implementation(libs.mparticle.core) // 5.47.2
     implementation(libs.mparticle.kit.base)
     implementation(libs.inked)
+    implementation(libs.android.core)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
