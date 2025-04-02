@@ -18,9 +18,12 @@ import com.mparticle.AttributionListener
 import com.mparticle.AttributionResult
 import com.mparticle.MPEvent
 import com.mparticle.commerce.CommerceEvent
+import com.mparticle.identity.MParticleUser
 import com.mparticle.internal.CoreCallbacks
+import com.mparticle.kits.FilteredIdentityApiRequest
 import com.mparticle.kits.KitIntegration
 import com.mparticle.kits.KitIntegration.ApplicationStateListener
+import com.mparticle.kits.KitIntegration.IdentityListener
 import com.mparticle.kits.MPSideloadedKit
 import com.mparticle.kits.ReportingMessage
 import org.json.JSONObject
@@ -33,7 +36,8 @@ open class MovableKit :
     CoreCallbacks.KitListener,
     AttributionListener,
     KitIntegration.CommerceListener,
-    ApplicationStateListener {
+    ApplicationStateListener,
+    IdentityListener {
     override fun getName(): String = NAME
 
     override fun onKitCreate(
@@ -44,9 +48,6 @@ open class MovableKit :
         settings?.get(MI_VALID_DOMAINS)?.let { valuesString ->
             val domainList = valuesString.split(",").map { it.trim() }
             MIClient.registerDeeplinkDomains(domainList)
-        }
-        settings?.get(MIU)?.let { userId ->
-            MIClient.setMIU(userId)
         }
         return mutableListOf()
     }
@@ -81,8 +82,7 @@ open class MovableKit :
                 MIClient.categoryViewed(category)
             }
 
-            else -> {
-            }
+            else -> {}
         }
 
         return listOf(
@@ -187,7 +187,6 @@ open class MovableKit :
         const val NAME = "Movable Ink Kit"
         const val MI_VALID_DOMAINS = "validDomains"
         const val MIU = "user_id"
-        private const val MOVABLE_APP_KEY = "movableAppKey"
         private const val MOVABLE_KIT = "MovableInkKit"
         const val MIN_SIDE_LOADED_KIT = 1040009
         const val CLICK_THROUGH_URL = "clickthrough_url"
@@ -231,4 +230,52 @@ open class MovableKit :
     ) {
         Log.d(MOVABLE_KIT, "$MOVABLE_KIT onKitApiCalled for kit: $kitId with method name: ${methodName.orEmpty()}")
     }
+
+    override fun onIdentifyCompleted(
+        mParticleUser: MParticleUser?,
+        identityApiRequest: FilteredIdentityApiRequest?,
+    ) {
+        mParticleUser.getUserIdentity().let {
+            if (it != null) {
+                MIClient.setMIU(it)
+            }
+        }
+    }
+
+    override fun onLoginCompleted(
+        mParticleUser: MParticleUser?,
+        identityApiRequest: FilteredIdentityApiRequest?,
+    ) {
+        mParticleUser.getUserIdentity().let {
+            if (it != null) {
+                MIClient.setMIU(it)
+            }
+        }
+    }
+
+    override fun onLogoutCompleted(
+        mParticleUser: MParticleUser?,
+        identityApiRequest: FilteredIdentityApiRequest?,
+    ) {}
+
+    override fun onModifyCompleted(
+        mParticleUser: MParticleUser?,
+        identityApiRequest: FilteredIdentityApiRequest?,
+    ) {
+        mParticleUser.getUserIdentity().let {
+            if (it != null) {
+                MIClient.setMIU(it)
+            }
+        }
+    }
+
+    override fun onUserIdentified(mParticleUser: MParticleUser?) {
+        mParticleUser.getUserIdentity().let {
+            if (it != null) {
+                MIClient.setMIU(it)
+            }
+        }
+    }
+
+    private fun MParticleUser?.getUserIdentity(): String? = this?.id?.toString()
 }

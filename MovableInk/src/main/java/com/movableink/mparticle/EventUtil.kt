@@ -9,8 +9,8 @@ object MovableEventType {
     const val PRODUCT_REMOVED = "remove_from_cart"
     const val PRODUCT_VIEWED = "view_detail"
     const val ORDER_COMPLETED = "purchase"
-    const val CATEGORY_VIEWED = "CategoryViewed"
-    const val PRODUCT_SEARCHED = "ProductSearched"
+    const val CATEGORY_VIEWED = "category_viewed"
+    const val PRODUCT_SEARCHED = "product_searched"
 }
 
 fun createProductProperties(product: Product): ProductProperties =
