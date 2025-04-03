@@ -25,8 +25,6 @@ androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
-#mparticle-core = { group = "com.mparticle", name = "android-core", version.ref = "mparticle" }
-#mparticle-kit-base = { group = "com.mparticle", name = "android-kit-base", version.ref = "mparticle" }
 
 mparticle-core = { module = "com.mparticle:android-core", version.ref = "mparticle" }
 mparticle-kit-base = { module = "com.mparticle:android-kit-base", version.ref = "mparticle" }
